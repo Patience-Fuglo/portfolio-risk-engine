@@ -69,6 +69,25 @@ bisection-based inverse CDF, not just internal consistency -- plus an
 integration test tying Stages 2-4 together on the real synthetic
 pipeline. 23 tests passing (was 17). Pushed.
 
-## Next up: Stage 5 -- Expected Shortfall
+## Stage 5 -- Expected Shortfall: COMPLETE
 
-Parametric and historical ES, built on Stage 4's VaR.
+Added `expected_shortfall/expected_shortfall.py`: `compute_parametric_es`
+(real closed-form Gaussian ES, `sigma * phi(z_alpha) / (1 -
+confidence_level) * sqrt(horizon_periods)`) and `compute_historical_es`
+(real tail average of every historical return at or below the
+empirical VaR threshold).
+
+5 new unit tests, including a direct check of the real closed-form
+Gaussian formula against known numerical constants (caught and fixed
+one of my own imprecisely hand-typed constants along the way -- phi(z)
+at z=1.6448536 is 0.1031356, not 0.1031689 as first guessed; recomputed
+directly rather than re-guessed), and -- the genuinely important
+check -- ES >= VaR verified directly for BOTH methods, a real
+mathematical property (the tail average beyond VaR can never be
+smaller than VaR itself), not just asserted in a docstring.
+28 tests passing (was 23). Pushed.
+
+## Next up: Stage 6 -- Stress Scenarios
+
+Real factor shocks applied to the portfolio's exposure vector;
+historical worst-period replay.
