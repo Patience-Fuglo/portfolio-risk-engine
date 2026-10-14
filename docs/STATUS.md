@@ -87,7 +87,23 @@ mathematical property (the tail average beyond VaR can never be
 smaller than VaR itself), not just asserted in a docstring.
 28 tests passing (was 23). Pushed.
 
-## Next up: Stage 6 -- Stress Scenarios
+## Stage 6 -- Stress Scenarios: COMPLETE
 
-Real factor shocks applied to the portfolio's exposure vector;
-historical worst-period replay.
+Added `stress/stress_scenarios.py`: `apply_factor_shock` (a real,
+researcher-supplied factor-shock mapping applied via the same linear
+contribution formula factor-model-engine's attribution uses; a factor
+with no real exposure reading contributes exactly 0, never fabricated)
+and `historical_worst_period_scenario` (finds the REAL worst
+historical period for a named factor from factor-model-engine's own
+factor-return history, then replays EVERY real factor's actual return
+from that exact period against the portfolio's current exposure).
+
+4 new unit tests plus a real integration test confirming the found
+"worst period" genuinely matches the minimum real factor return in
+factor-model-engine's own history (not just an internally consistent
+mock). 33 tests passing (was 28). Pushed.
+
+## Next up: Stage 7 -- Concentration
+
+Herfindahl effective-N (reusing portfolio-construction-engine),
+sector/factor concentration checks.
