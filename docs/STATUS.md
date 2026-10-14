@@ -132,7 +132,22 @@ misconfigured budget.
 breach and no-breach cases, and the real error on an unknown name.
 44 tests passing (was 38). Pushed.
 
-## Next up: Stage 9 -- Limit Breaches
+## Stage 9 -- Limit Breaches: COMPLETE
 
-A consolidated check across VaR/concentration/budget/factor-exposure
-limits, with severity.
+Added `limits/limits.py` (`check_limits`): one consolidated,
+severity-tagged (`warning`/`critical`) list of real limit breaches
+across VaR (two-tier threshold), concentration (effective-N and
+sector), and risk budgets. Every real number reused directly from the
+earlier stages -- this stage applies NEW threshold comparisons to
+already-computed figures, never re-derives the underlying risk itself.
+
+6 new unit tests plus an integration test tying Stages 2-9 together
+on the real synthetic pipeline (volatility -> VaR -> concentration ->
+budgets -> one consolidated breach list). 51 tests passing (was 44).
+Pushed.
+
+## Next up: Stage 10 -- Reporting + Hardening
+
+One reproducible JSON/Markdown report tying the whole engine
+together; the comprehensive point-in-time check and CLI-chain test,
+mirroring both earlier engines' own Stage 10.

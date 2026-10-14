@@ -12,12 +12,12 @@ outputs. It analyzes a GIVEN, fixed portfolio: "how risky is this
 portfolio," never "which portfolio should we hold" (Engine 2's job) or
 "what explains these stocks" (Engine 1's job).
 
-**Stages 1–8 of 10 are complete**: schemas, config, dependency wiring,
+**Stages 1–9 of 10 are complete**: schemas, config, dependency wiring,
 real volatility decomposition, historical simulation, real VaR/ES,
-real stress scenarios, real concentration, and real risk budgets
-(factor- and position-level, checked against Stage 2's own
-decomposition). See [`docs/STATUS.md`](docs/STATUS.md) for
-stage-by-stage build status.
+real stress scenarios, real concentration, real risk budgets, and one
+consolidated, severity-tagged limit-breach check across all of them.
+See [`docs/STATUS.md`](docs/STATUS.md) for stage-by-stage build
+status.
 
 ## Install
 
