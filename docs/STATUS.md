@@ -36,8 +36,22 @@ test on the real synthetic dataset (factor-model-engine's pipeline ->
 portfolio-construction-engine's risk model -> this engine's
 volatility decomposition). 13 tests passing (was 7). Pushed.
 
-## Next up: Stage 3 -- Historical Simulation
+## Stage 3 -- Historical Simulation: COMPLETE
 
-Hold today's weights fixed, replay real historical stock returns
-(reusing factor-model-engine's point-in-time realized-return helper)
--- the shared input for VaR/ES/stress in later stages.
+Added `historical/historical_simulation.py`
+(`simulate_historical_portfolio_returns`): holds a real, FIXED set of
+weights (today's portfolio) and replays real historical stock returns
+across a real date range, reusing factor-model-engine's own
+point-in-time `_period_realized_returns`. Deliberately distinct from
+portfolio-construction-engine's `run_backtest` (which evolves weights
+forward through real rebalancing) -- this holds weights fixed and asks
+what historical returns WOULD HAVE produced for TODAY's portfolio, the
+real historical-simulation VaR/ES convention.
+
+4 new unit tests, including a security with no real price excluded
+rather than zero-filled. 17 tests passing (was 13). Pushed.
+
+## Next up: Stage 4 -- VaR
+
+Parametric (Gaussian, from Stage 2's volatility) and historical (from
+Stage 3's simulated return series) Value-at-Risk.
