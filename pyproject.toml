@@ -6,13 +6,13 @@ build-backend = "setuptools.build_meta"
 name = "portfolio-risk-engine"
 version = "0.1.0"
 description = "Point-in-time portfolio risk model: volatility decomposition, VaR/Expected Shortfall, stress scenarios, concentration, risk budgets, and limit breaches"
-requires-python = ">=3.9"
+requires-python = ">=3.9,<3.13"
 dependencies = [
-    "pandas>=2.0",
-    "numpy>=1.23",
-    "pyyaml>=6.0",
-    "factor-model-engine @ git+https://github.com/Patience-Fuglo/factor-model-engine.git",
-    "portfolio-construction-engine @ git+https://github.com/Patience-Fuglo/portfolio-construction-engine.git",
+    "pandas>=2.0,<4.0",
+    "numpy>=1.23,<3.0",
+    "pyyaml>=6.0,<7.0",
+    "factor-model-engine @ git+https://github.com/Patience-Fuglo/factor-model-engine.git@0b9cc0fd7fea8d940080e8210185f370d4a39bc1",
+    "portfolio-construction-engine @ git+https://github.com/Patience-Fuglo/portfolio-construction-engine.git@678cc6c68ca2cc339e4e968db7065ea9b71388d3",
 ]
 
 [project.optional-dependencies]
