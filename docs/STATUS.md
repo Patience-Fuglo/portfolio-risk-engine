@@ -103,7 +103,21 @@ from that exact period against the portfolio's current exposure).
 factor-model-engine's own history (not just an internally consistent
 mock). 33 tests passing (was 28). Pushed.
 
-## Next up: Stage 7 -- Concentration
+## Stage 7 -- Concentration: COMPLETE
 
-Herfindahl effective-N (reusing portfolio-construction-engine),
-sector/factor concentration checks.
+Added `concentration/concentration.py` (`compute_concentration`): the
+same real Herfindahl effective-N formula `portfolio-construction-
+engine` uses internally (re-derived locally -- a one-line formula, no
+real logic to share beyond it), plus real top-N weight and sector
+concentration, both using GROSS weight so a large short position
+registers as real concentration risk, never offset by a long
+elsewhere.
+
+5 new unit tests, including a direct check that a dollar-neutral but
+highly concentrated long/short book is correctly flagged (gross, not
+net, weight). 38 tests passing (was 33). Pushed.
+
+## Next up: Stage 8 -- Risk Budgets
+
+Each factor's/position's real risk contribution vs. a configured
+target share.
