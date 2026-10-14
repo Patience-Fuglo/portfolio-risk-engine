@@ -21,6 +21,25 @@ from portfolio_construction.optimization import risk_contributions
 
 from ..data.schemas import VolatilityResult
 
+# A real, investigated numerical-stability floor, not a research
+# assumption: a portfolio whose real net exposure cancels out
+# cross-sectionally (e.g. an equal-weight book over the FULL eligible
+# universe, confirmed elsewhere in this build to net to ~0 exposure)
+# has a TRUE portfolio variance of exactly 0 -- but the real
+# `w^T Sigma w` quadratic form, computed via a BLAS matrix multiply,
+# can land on a tiny nonzero float (~1e-30 or smaller) instead of
+# exact 0.0, due to floating-point non-associativity in a
+# multi-threaded BLAS reduction (confirmed directly: re-running the
+# identical computation occasionally produced a different noise-level
+# value in the last few significant digits -- the same real root
+# cause already documented for portfolio-construction-engine's SLSQP
+# solver, now observed here in a plain matrix multiply, no solver
+# involved). Dividing BY that noise (for marginal/component
+# contributions) would produce a numerically meaningless result that
+# happens to look like a real number. Treating anything below this
+# epsilon as "effectively zero" avoids reporting that noise as signal.
+_VARIANCE_EPSILON = 1e-12
+
 
 def compute_volatility(
     portfolio_exposure_rows: Sequence[FactorExposureRow],
@@ -53,8 +72,13 @@ def compute_volatility(
     aligned_covariance = stock_covariance.loc[security_ids, security_ids].to_numpy()
 
     component = risk_contributions(weights, aligned_covariance)
-    portfolio_variance = float(weights @ aligned_covariance @ weights)
-    portfolio_volatility = float(np.sqrt(max(portfolio_variance, 0.0)))
+    raw_portfolio_variance = float(weights @ aligned_covariance @ weights)
+    # treat anything below the real noise floor as exactly zero -- see
+    # _VARIANCE_EPSILON's own comment for why this is necessary, not
+    # just defensive: the raw BLAS-computed value can be a tiny nonzero
+    # float even when the true variance is exactly 0
+    portfolio_variance = raw_portfolio_variance if raw_portfolio_variance >= _VARIANCE_EPSILON else 0.0
+    portfolio_volatility = float(np.sqrt(portfolio_variance))
 
     warnings = list(portfolio_risk.warnings)
     marginal_contribution: dict[str, float] = {}
@@ -65,16 +89,27 @@ def compute_volatility(
             marginal_contribution[sid] = mc
             component_contribution[sid] = cc / portfolio_volatility  # component contribution TO VOLATILITY, not variance
     else:
-        warnings.append("portfolio volatility is zero or undefined -- marginal/component contributions not computed")
+        warnings.append("portfolio volatility is zero (or below the real numerical noise floor) -- marginal/component contributions not computed")
+
+    # same real noise floor applied to factor-model-engine's own
+    # per-factor contributions (and the aggregate factor/specific
+    # variance it reports) -- each is individually a BLAS-computed
+    # quantity with the same true-zero-but-noisy-float failure mode
+    factor_variance = portfolio_risk.factor_variance if portfolio_risk.factor_variance >= _VARIANCE_EPSILON else 0.0
+    specific_variance = portfolio_risk.specific_variance if portfolio_risk.specific_variance >= _VARIANCE_EPSILON else 0.0
+    factor_risk_contribution = {
+        name: (value if abs(value) >= _VARIANCE_EPSILON else 0.0)
+        for name, value in portfolio_risk.factor_risk_contribution.items()
+    }
 
     return VolatilityResult(
         as_of=as_of,
         portfolio_id=portfolio_id,
         portfolio_variance=portfolio_variance,
         portfolio_volatility=portfolio_volatility,
-        factor_variance=portfolio_risk.factor_variance,
-        specific_variance=portfolio_risk.specific_variance,
-        factor_risk_contribution=portfolio_risk.factor_risk_contribution,
+        factor_variance=factor_variance,
+        specific_variance=specific_variance,
+        factor_risk_contribution=factor_risk_contribution,
         marginal_contribution=marginal_contribution,
         component_contribution=component_contribution,
         warnings=tuple(warnings),

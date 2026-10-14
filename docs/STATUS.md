@@ -3,6 +3,77 @@
 Tracks stage-by-stage completion, mirroring `factor-model-engine`'s
 and `portfolio-construction-engine`'s own `docs/STATUS.md` convention.
 
+## Final summary (all 10 stages complete)
+
+**Architecture.** `data/` (schemas) -> `volatility/` (factor/specific
+decomposition + marginal/component contributions, reusing both
+upstream engines) -> `historical/` (hold-weights-fixed replay) ->
+`var/` + `expected_shortfall/` (parametric + historical, from-scratch
+normal quantile matching `alpha-validation-toolkit`'s own convention)
+-> `stress/` (hypothetical shocks + real historical worst-period
+replay) -> `concentration/` + `budgets/` + `limits/` (consolidated,
+severity-tagged breach list) -> `pipeline/` + `reporting/` (one
+orchestration function, one JSON/Markdown report). Depends on BOTH
+`factor-model-engine` and `portfolio-construction-engine` as pinned
+git dependencies (a 3-deep real dependency chain); never re-estimates
+a factor exposure, factor covariance, specific variance, or stock
+covariance matrix.
+
+**Important formulas:** marginal contribution `(Sigma w)_i /
+portfolio_volatility`; component contribution `w_i * marginal_i`
+(sums exactly to total volatility); parametric VaR `z_alpha * sigma *
+sqrt(horizon)`; parametric ES `sigma * phi(z_alpha) / (1 -
+confidence) * sqrt(horizon)`; Herfindahl effective-N `1 /
+sum(w_i^2)`.
+
+**Test counts.** 59 tests passing: unit tests per module, integration
+tests on the real synthetic dataset and on both upstream engines' real
+pipeline output, and three Stage 10 hardening tests.
+
+**Point-in-time integrity and reproducibility, including a real
+numerical-stability finding caught along the way.** The comprehensive
+Stage 10 test (extending the dataset 12 real months into the future;
+re-running the identical analysis twice) initially failed
+intermittently -- NOT from a look-ahead bug, and NOT from an iterative
+solver (this engine never runs one, unlike portfolio-construction-
+engine's SLSQP). The real cause: an equal-weight benchmark over the
+FULL universe has a TRUE factor variance of exactly 0 (confirmed
+elsewhere in this build), but the real `w^T Sigma w` quadratic form,
+computed via a BLAS matrix multiply, occasionally lands on a tiny
+nonzero float (~1e-30) instead of exact 0.0 -- the same root cause
+(floating-point non-associativity in multi-threaded BLAS) already
+documented for portfolio-construction-engine's SLSQP solver, now
+confirmed to also affect a PLAIN matrix multiply with no solver
+involved. Dividing by that noise (for marginal/component contributions
+and risk-budget shares) would report numerically meaningless values
+that happen to look like real numbers.
+
+**Fixed at the source, not papered over in the test:** `volatility.
+compute_volatility` now floors any variance-scale quantity below a
+real noise epsilon (`1e-12`, far below any economically meaningful
+variance) to exactly `0.0` before it is used in any further division
+or reported in a result -- confirmed via 5 independent repeated runs
+after the fix, all exactly reproducible.
+
+**End-to-end demonstration.** `scripts/run_risk_analysis.py` runs the
+complete Stage 2-9 pipeline and writes one JSON + Markdown risk
+report; `tests/integration/test_cli_workflow.py` runs it as a real
+subprocess.
+
+**Limitations, identified rather than hidden:**
+- Stress scenarios shock factor returns only (`specific_pnl_assumed_zero
+  =True`) -- a real, documented simplification, not a full repricing.
+- Historical VaR/ES use a single-period empirical percentile scaled by
+  `sqrt(horizon)` for multi-period horizons, rather than true
+  overlapping-window aggregation.
+- This engine inherits every upstream limitation already documented in
+  `factor-model-engine` (the Value-factor long-horizon finding, plain
+  sample covariance with no shrinkage) and `portfolio-construction-
+  engine` (the SLSQP non-determinism, now shown to have a sibling
+  effect even without a solver).
+- All data is synthetic; this engine has no real-vendor data adapter
+  of its own.
+
 ## Stage 1 -- Foundation: COMPLETE
 
 Schemas (`data/schemas.py`): `VolatilityResult`, `VaRResult`,
@@ -146,8 +217,20 @@ on the real synthetic pipeline (volatility -> VaR -> concentration ->
 budgets -> one consolidated breach list). 51 tests passing (was 44).
 Pushed.
 
-## Next up: Stage 10 -- Reporting + Hardening
+## Stage 10 -- Reporting + Hardening: COMPLETE
 
-One reproducible JSON/Markdown report tying the whole engine
-together; the comprehensive point-in-time check and CLI-chain test,
-mirroring both earlier engines' own Stage 10.
+Added `pipeline/pipeline.py` (`run_full_risk_analysis`, orchestrates
+Stages 2-9) and `reporting/report.py` (`report_to_dict`/
+`render_markdown_report`, both derived from the same real
+`RiskAnalysisResult`). Added `tests/integration/test_full_system.py`
+(the comprehensive PIT/reproducibility check -- see the Final Summary
+above for the real numerical-stability finding it caught and the fix
+applied) and `tests/integration/test_cli_workflow.py` (real subprocess
+CLI test). Added `scripts/run_risk_analysis.py`, this repo's first CLI
+entry point.
+
+59 tests passing (was 51). Full leak-check clean across the whole
+repo. Pushed.
+
+**All 10 stages of the portfolio-risk-engine build are now
+complete.**
