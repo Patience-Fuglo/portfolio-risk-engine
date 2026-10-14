@@ -1,3 +1,3 @@
-"""var -- implemented in a later stage. Stage 1 only establishes the
-repository structure and the schemas/conventions this module will
-build on (see src/portfolio_risk/data/schemas.py)."""
+from .value_at_risk import compute_historical_var, compute_parametric_var
+
+__all__ = ["compute_parametric_var", "compute_historical_var"]

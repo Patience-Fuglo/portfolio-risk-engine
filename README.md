@@ -12,13 +12,10 @@ outputs. It analyzes a GIVEN, fixed portfolio: "how risky is this
 portfolio," never "which portfolio should we hold" (Engine 2's job) or
 "what explains these stocks" (Engine 1's job).
 
-**Stages 1–3 of 10 are complete**: schemas, config, dependency wiring,
-a real portfolio volatility decomposition (factor vs. specific,
-marginal/component risk contributions), and a real historical
-simulation engine that holds today's weights fixed and replays
-historical stock returns -- the shared input the coming VaR/ES/stress
-stages build on. See [`docs/STATUS.md`](docs/STATUS.md) for
-stage-by-stage build status.
+**Stages 1–4 of 10 are complete**: schemas, config, dependency wiring,
+a real portfolio volatility decomposition, a real historical
+simulation engine, and real parametric/historical Value-at-Risk. See
+[`docs/STATUS.md`](docs/STATUS.md) for stage-by-stage build status.
 
 ## Install
 

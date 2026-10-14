@@ -51,7 +51,24 @@ real historical-simulation VaR/ES convention.
 4 new unit tests, including a security with no real price excluded
 rather than zero-filled. 17 tests passing (was 13). Pushed.
 
-## Next up: Stage 4 -- VaR
+## Stage 4 -- VaR: COMPLETE
 
-Parametric (Gaussian, from Stage 2's volatility) and historical (from
-Stage 3's simulated return series) Value-at-Risk.
+Added `var/value_at_risk.py`: `compute_parametric_var` (Gaussian,
+`z_alpha * portfolio_volatility * sqrt(horizon_periods)`, reusing
+Stage 2's real volatility directly) and `compute_historical_var`
+(real empirical percentile of Stage 3's simulated return series, same
+sqrt-time horizon scaling for consistency). The standard normal
+quantile is implemented from scratch via bisection -- matching
+`alpha-validation-toolkit`'s own deliberate choice not to delegate
+this to `scipy.stats.norm.ppf`, the same house convention, not a new
+one invented here.
+
+5 new unit tests, including a direct check against the real, known
+97.5th-percentile z-value (~1.95996) -- an independent check on the
+bisection-based inverse CDF, not just internal consistency -- plus an
+integration test tying Stages 2-4 together on the real synthetic
+pipeline. 23 tests passing (was 17). Pushed.
+
+## Next up: Stage 5 -- Expected Shortfall
+
+Parametric and historical ES, built on Stage 4's VaR.
