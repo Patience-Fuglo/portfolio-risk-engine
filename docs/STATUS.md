@@ -117,7 +117,22 @@ elsewhere.
 highly concentrated long/short book is correctly flagged (gross, not
 net, weight). 38 tests passing (was 33). Pushed.
 
-## Next up: Stage 8 -- Risk Budgets
+## Stage 8 -- Risk Budgets: COMPLETE
 
-Each factor's/position's real risk contribution vs. a configured
-target share.
+Added `budgets/budgets.py` (`check_risk_budgets`): reuses Stage 2's
+own real decomposition directly
+(`VolatilityResult.factor_risk_contribution`/`component_contribution`)
+-- never a separately re-derived risk figure. A budget's name
+resolves against EITHER real dictionary (factor name -> share of
+total variance; security id -> share of total volatility); a name
+matching neither raises, rather than silently skipping a
+misconfigured budget.
+
+6 new unit tests, including both factor- and position-level budgets,
+breach and no-breach cases, and the real error on an unknown name.
+44 tests passing (was 38). Pushed.
+
+## Next up: Stage 9 -- Limit Breaches
+
+A consolidated check across VaR/concentration/budget/factor-exposure
+limits, with severity.
