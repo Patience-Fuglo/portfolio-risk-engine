@@ -1,0 +1,20 @@
+# Engine-wide configuration. Every field tagged RESEARCH ASSUMPTION in
+# docs/research_assumptions.md needs the researcher's explicit sign-off --
+# these are modeling choices, not safe engineering defaults.
+
+run:
+  output_dir: "outputs"
+  random_seed: 1337
+
+var:
+  confidence_level: 0.95                  # RESEARCH ASSUMPTION
+  horizon_periods: 1                      # RESEARCH ASSUMPTION
+  min_historical_observations: 24         # RESEARCH ASSUMPTION
+
+concentration:
+  min_effective_n_positions: 5.0          # RESEARCH ASSUMPTION
+  max_sector_concentration: 0.40          # RESEARCH ASSUMPTION
+
+limits:
+  max_var_fraction_critical: 0.15         # RESEARCH ASSUMPTION
+  max_var_fraction_warning: 0.08          # RESEARCH ASSUMPTION
