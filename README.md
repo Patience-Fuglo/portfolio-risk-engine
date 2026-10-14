@@ -12,11 +12,12 @@ outputs. It analyzes a GIVEN, fixed portfolio: "how risky is this
 portfolio," never "which portfolio should we hold" (Engine 2's job) or
 "what explains these stocks" (Engine 1's job).
 
-**Stage 1 of 10 is complete**: schemas (`VolatilityResult`,
-`VaRResult`, `ExpectedShortfallResult`, `StressScenarioResult`,
-`ConcentrationResult`, `RiskBudget`/`RiskBudgetResult`, `LimitBreach`),
-config, and dependency wiring to `factor-model-engine`,
-`portfolio-construction-engine`, and `alpha-validation-toolkit`. See
+**Stages 1–2 of 10 are complete**: schemas, config, dependency wiring
+to `factor-model-engine`, `portfolio-construction-engine`, and
+`alpha-validation-toolkit`; and a real portfolio volatility
+decomposition (factor vs. specific, reusing factor-model-engine's own
+decomposition; marginal/component risk contributions, reusing
+portfolio-construction-engine's risk-contribution math). See
 [`docs/STATUS.md`](docs/STATUS.md) for stage-by-stage build status.
 
 ## Install
